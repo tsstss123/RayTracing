@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+/实验补充_光线跟踪几何.pptx
+/实验三 光线跟踪.pptx
+/~$实验三 光线跟踪.pptx
+/RayTracing.VC.VC.opendb
+/RayTracing.VC.db
+/RayTracing.sln
+/.vs/RayTracing/v14
+/Debug
+/RayTracing/Debug
+/RayTracing/RayTracing.vcxproj.filters
+/RayTracing/RayTracing.vcxproj
+/RayTracing/RayTrace.bmp
+/RayTracing/RayTrace - 副本.bmp
+/RayTracing/fuben.txt
