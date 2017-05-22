@@ -13,14 +13,7 @@ vec3f Entity::get_refraction(vec3f ins, vec3f dir)
 {
     return vec3f();
 }
-float Entity::get_weight_rx()
-{
-	return 0.0f;
-}
-float Entity::get_weight_rt()
-{
-	return 0.0f;
-}
+
 Sphere_Phong::Sphere_Phong(vec3f _center, float _rad, Color _color)
 {
 	this->center = _center;
@@ -32,12 +25,21 @@ vec3f Sphere_Phong::light_intersection(vec3f start, vec3f dir)
     dir = dir.norm();
     vec3f ptos = start - this->center;
     float B = dir * ptos * 2;
-    float C = this->center * this->center - this->rad * this->rad;
+	float C = ptos * ptos - this->rad * this->rad;
     float delta = B * B - C * 4;
     if(delta <= 0)
         return vec3f();
-    float t = std::min(-B + std::sqrt(delta), -B + std::sqrt(delta)) / 2;
-    return start + dir * t;
+    float tmin = std::min(-B - std::sqrt(delta), -B + std::sqrt(delta)) / 2;
+	float tmax = std::max(-B - std::sqrt(delta), -B + std::sqrt(delta)) / 2;
+	if (tmin > eps)
+	{
+		return start + dir * tmin;
+	}
+	else
+	{
+		return vec3f();
+	}
+	
 }
 
 vec3f Sphere_Phong::normal_dir(vec3f point)
@@ -52,15 +54,34 @@ vec3f Sphere_Phong::render_point(vec3f ins, vec3f dir, std::vector<Entity*> &ent
 	vec3f V = (vec3f() - dir).norm();
 	for (auto light : lights)
 	{
+		bool is_shadow = false;
 		vec3f L = light->direction(ins).norm();
-		vec3f H = (L + V).norm();
-		if (N * L > 0)
+		
+		for (auto entity : entitys)
 		{
-			I += N * L * kd;
+			if (entity == this)
+			{
+				continue;
+			}
+			if (!entity->light_intersection(ins, vec3f() - L).is_zero())
+			{
+				is_shadow = true;
+				break;
+			}
 		}
-		if (N * H > 0)
+		if (is_shadow)
 		{
-			I += std::pow(N * H, n) * ks;
+			continue;
+		}
+
+		vec3f R = this->get_reflex(ins, L);
+		if (N * (vec3f() - L) > 0)
+		{
+			I += N * (vec3f() - L) * kd;
+		}
+		if (V * R > 0)
+		{
+			I += std::pow(V * R, n) * ks;
 		}
 	}
 	return this->color.to_vec() * I;
@@ -78,6 +99,7 @@ vec3f Sphere_Phong::get_refraction(vec3f ins, vec3f dir)
 {
 	return vec3f();
 }
+
 
 vec3f Plane_Phong::light_intersection(vec3f start, vec3f dir)
 {

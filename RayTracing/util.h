@@ -45,5 +45,5 @@ struct Color
 	}
 };
 const Color Black(0, 0, 0), Red(255, 0, 0), Green(0, 255, 0), Blue(0, 0, 255), White(255, 255, 255);
-
+const Color DRed(180, 50, 50), DBlue(50, 50, 180);
 #endif

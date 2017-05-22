@@ -15,8 +15,6 @@ public:
     
     virtual vec3f get_reflex(vec3f ins, vec3f dir);
     virtual vec3f get_refraction(vec3f ins, vec3f dir);
-	virtual float get_weight_rx();
-	virtual float get_weight_rt();
 };
 
 class Phong_Entity : public Entity
