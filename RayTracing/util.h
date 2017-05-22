@@ -4,7 +4,7 @@
 #include <cmath>
 using std::sqrt;
 
-const double eps = 1e-6;
+const double eps = 1e-4;
 struct vec3f
 {
     float x, y, z;
@@ -45,5 +45,5 @@ struct Color
 	}
 };
 const Color Black(0, 0, 0), Red(255, 0, 0), Green(0, 255, 0), Blue(0, 0, 255), White(255, 255, 255);
-const Color DRed(180, 50, 50), DBlue(50, 50, 180);
+const Color DRed(180, 50, 50), DBlue(50, 50, 180), DGreen(50, 180, 50), DGray(200, 200, 200);
 #endif

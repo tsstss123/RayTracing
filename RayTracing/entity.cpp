@@ -101,19 +101,86 @@ vec3f Sphere_Phong::get_refraction(vec3f ins, vec3f dir)
 }
 
 
+Plane_Phong::Plane_Phong(vec3f _n, float _d, Color _color)
+{
+	nvec = _n;
+	d = _d;
+	color = _color;
+}
+
 vec3f Plane_Phong::light_intersection(vec3f start, vec3f dir)
 {
-    return vec3f();
-    //TODO
+	if(std::fabs(start * nvec + d) < eps)
+	{
+		return vec3f();
+	}
+	vec3f V = dir.norm();
+	float t = - (nvec * start + d) / (nvec * V);
+	if (t > eps)
+	{
+		return start + V * t;
+	}
+	else
+	{
+		return vec3f();
+	}
 }
 
 vec3f Plane_Phong::normal_dir(vec3f point)
 {
-    return vec3f();
-    //TODO
+    return nvec.norm();
+	//single face
 }
 
 vec3f Plane_Phong::render_point(vec3f ins, vec3f dir, std::vector<Entity*>& entitys, std::vector<Light*>& lights)
+{
+	float I = 0;
+	vec3f N = this->normal_dir(ins);
+	vec3f V = (vec3f() - dir).norm();
+	for (auto light : lights)
+	{
+		bool is_shadow = false;
+		vec3f L = light->direction(ins).norm();
+
+		for (auto entity : entitys)
+		{
+			if (entity == this)
+			{
+				continue;
+			}
+			if (!entity->light_intersection(ins, vec3f() - L).is_zero())
+			{
+				is_shadow = true;
+				break;
+			}
+		}
+		if (is_shadow)
+		{
+			continue;
+		}
+
+		vec3f R = this->get_reflex(ins, L);
+		if (N * (vec3f() - L) > 0)
+		{
+			I += N * (vec3f() - L) * kd;
+		}
+		if (V * R > 0)
+		{
+			I += std::pow(V * R, n) * ks;
+		}
+	}
+	return this->color.to_vec() * I;
+}
+
+vec3f Plane_Phong::get_reflex(vec3f ins, vec3f dir)
+{
+	vec3f N = this->normal_dir(ins);
+	vec3f L = vec3f() - dir;
+	vec3f R = (N * (N * L) * 2 - L).norm();
+	return R;
+}
+
+vec3f Plane_Phong::get_refraction(vec3f ins, vec3f dir)
 {
 	return vec3f();
 }

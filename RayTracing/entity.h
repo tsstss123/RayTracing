@@ -77,12 +77,17 @@ public:
 class Plane_Phong : public Phong_Entity
 {
 public:
-    float a, b, c, d;
+	vec3f nvec;
+    float d;
+	Color color;
 
 public:
+	Plane_Phong(vec3f _n, float _d, Color _color);
     virtual vec3f light_intersection(vec3f start, vec3f dir);
     virtual vec3f normal_dir(vec3f point);
     virtual vec3f render_point(vec3f ins, vec3f dir, std::vector<Entity*> &entitys, std::vector<Light*> &lights);
+	virtual vec3f get_reflex(vec3f ins, vec3f dir);
+	virtual vec3f get_refraction(vec3f ins, vec3f dir);
 };
 
 #endif
