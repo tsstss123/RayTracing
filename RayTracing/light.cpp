@@ -1,7 +1,12 @@
 #include "util.h"
 #include "light.h"
 
-PointLight::PointLight(vec3f _start)
+Light::Light(vec3f _material)
+{
+	this->material = _material;
+}
+
+PointLight::PointLight(vec3f _start, vec3f _material):Light(_material)
 {
 	start = _start;
 }
@@ -11,7 +16,7 @@ vec3f PointLight::direction(vec3f point)
     return point - start;
 }
 
-ParallelLight::ParallelLight(vec3f _dir)
+ParallelLight::ParallelLight(vec3f _dir, vec3f _material):Light(_material)
 {
 	dir = _dir;
 }

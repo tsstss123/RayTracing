@@ -4,14 +4,65 @@
 
 #include "entity.h"
 
-vec3f Entity::get_reflex(vec3f ins, vec3f dir)
+BoundingBox_Entity::BoundingBox_Entity(vec3f _min, vec3f _max)
 {
-    return vec3f();
+	this->min = _min;
+	this->max = _max;
 }
 
-vec3f Entity::get_refraction(vec3f ins, vec3f dir)
+vec3f BoundingBox_Entity::get_center()
 {
-    return vec3f();
+	return (this->min + this->max) * 0.5;
+}
+
+float BoundingBox_Entity::get_distance(BoundingBox_Entity *box)
+{
+	return (this->get_center() - box->get_center()).length();
+}
+
+vec3f BoundingBox_Entity::light_intersection(vec3f start, vec3f dir)
+{
+	return vec3f();
+}
+
+vec3f Phong_Entity::render_point(vec3f ins, vec3f dir, std::vector<Renderable_Entity*>& entitys, std::vector<Light*>& lights)
+{
+	float I = 0;
+	vec3f N = this->normal_dir(ins);
+	vec3f V = (vec3f() - dir).norm();
+	for (auto light : lights)
+	{
+		bool is_shadow = false;
+		vec3f L = light->direction(ins).norm();
+
+		for (auto entity : entitys)
+		{
+			if (entity == this)
+			{
+				continue;
+			}
+			if (!entity->light_intersection(ins, vec3f() - L).is_zero())
+			{
+				is_shadow = true;
+				break;
+			}
+		}
+		if (is_shadow)
+		{
+			continue;
+		}
+
+		vec3f R = this->get_reflex(ins, L);
+		if (N * (vec3f() - L) > 0)
+		{
+			I += N * (vec3f() - L) * kd;
+		}
+		if (V * R > 0)
+		{
+			I += std::pow(V * R, n) * ks;
+		}
+	}
+	return this->color.to_vec() * I;
 }
 
 Sphere_Phong::Sphere_Phong(vec3f _center, float _rad, Color _color)
@@ -47,46 +98,6 @@ vec3f Sphere_Phong::normal_dir(vec3f point)
     return (point - this->center).norm();
 }
 
-vec3f Sphere_Phong::render_point(vec3f ins, vec3f dir, std::vector<Entity*> &entitys, std::vector<Light*> &lights)
-{
-	float I = 0;
-	vec3f N = this->normal_dir(ins);
-	vec3f V = (vec3f() - dir).norm();
-	for (auto light : lights)
-	{
-		bool is_shadow = false;
-		vec3f L = light->direction(ins).norm();
-		
-		for (auto entity : entitys)
-		{
-			if (entity == this)
-			{
-				continue;
-			}
-			if (!entity->light_intersection(ins, vec3f() - L).is_zero())
-			{
-				is_shadow = true;
-				break;
-			}
-		}
-		if (is_shadow)
-		{
-			continue;
-		}
-
-		vec3f R = this->get_reflex(ins, L);
-		if (N * (vec3f() - L) > 0)
-		{
-			I += N * (vec3f() - L) * kd;
-		}
-		if (V * R > 0)
-		{
-			I += std::pow(V * R, n) * ks;
-		}
-	}
-	return this->color.to_vec() * I;
-}
-
 vec3f Sphere_Phong::get_reflex(vec3f ins, vec3f dir)
 {
 	vec3f N = this->normal_dir(ins);
@@ -100,6 +111,11 @@ vec3f Sphere_Phong::get_refraction(vec3f ins, vec3f dir)
 	return vec3f();
 }
 
+BoundingBox_Entity Sphere_Phong::get_bounding()
+{
+	vec3f Min, Max;
+	
+}
 
 Plane_Phong::Plane_Phong(vec3f _n, float _d, Color _color)
 {
@@ -132,46 +148,6 @@ vec3f Plane_Phong::normal_dir(vec3f point)
 	//single face
 }
 
-vec3f Plane_Phong::render_point(vec3f ins, vec3f dir, std::vector<Entity*>& entitys, std::vector<Light*>& lights)
-{
-	float I = 0;
-	vec3f N = this->normal_dir(ins);
-	vec3f V = (vec3f() - dir).norm();
-	for (auto light : lights)
-	{
-		bool is_shadow = false;
-		vec3f L = light->direction(ins).norm();
-
-		for (auto entity : entitys)
-		{
-			if (entity == this)
-			{
-				continue;
-			}
-			if (!entity->light_intersection(ins, vec3f() - L).is_zero())
-			{
-				is_shadow = true;
-				break;
-			}
-		}
-		if (is_shadow)
-		{
-			continue;
-		}
-
-		vec3f R = this->get_reflex(ins, L);
-		if (N * (vec3f() - L) > 0)
-		{
-			I += N * (vec3f() - L) * kd;
-		}
-		if (V * R > 0)
-		{
-			I += std::pow(V * R, n) * ks;
-		}
-	}
-	return this->color.to_vec() * I;
-}
-
 vec3f Plane_Phong::get_reflex(vec3f ins, vec3f dir)
 {
 	vec3f N = this->normal_dir(ins);
@@ -183,4 +159,9 @@ vec3f Plane_Phong::get_reflex(vec3f ins, vec3f dir)
 vec3f Plane_Phong::get_refraction(vec3f ins, vec3f dir)
 {
 	return vec3f();
+}
+
+BoundingBox_Entity Plane_Phong::get_bounding()
+{
+	
 }

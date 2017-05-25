@@ -6,6 +6,9 @@
 class Light
 {
 public:
+	vec3f material;
+public:
+	Light(vec3f _material);
     virtual vec3f direction(vec3f point) = 0;
 };
 
@@ -15,7 +18,7 @@ public:
     vec3f start;
 
 public:
-	PointLight(vec3f _start);
+	PointLight(vec3f _start, vec3f _material);
     vec3f direction(vec3f point);
 };
 
@@ -25,7 +28,7 @@ public:
     vec3f dir;
 
 public:
-	ParallelLight(vec3f _dir);
+	ParallelLight(vec3f _dir, vec3f _material);
     vec3f direction(vec3f point);
 };
 

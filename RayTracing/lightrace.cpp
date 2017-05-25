@@ -1,4 +1,4 @@
-//#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <cstdio>
 #include <cmath>
@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <stack>
 #include <memory>
 
 #include "util.h"
@@ -13,6 +14,7 @@
 #include "entity.h"
 
 using std::vector;
+using std::stack;
 using std::shared_ptr;
 using std::string;
 
@@ -32,7 +34,7 @@ unsigned char resize(float v)
 	if (v < 0) return 0;
 	return (unsigned char)v;
 }
-void output(int px, int py, string fname = "RayTrace.bmp")
+void output(int px, int py, string fname)
 {
 	unsigned char head_buf[100] = { 66,77,54,8,7,0,0,0,0,0,54,0,0,0,40,0,0,0,0,0,0,0,0,0,0,0,1,0,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	FILE *fout = fopen(fname.c_str(), "wb");
@@ -54,8 +56,9 @@ void output(int px, int py, string fname = "RayTrace.bmp")
 	fclose(fout);
 }
 
-vector<Entity*> entitys;
+vector<Renderable_Entity*> entitys;
 vector<Light*> lights;
+BoundingBox_Entity* treeHead;
 
 vec3f RayTracing(vec3f start, vec3f dir, int depth)
 {
@@ -64,7 +67,7 @@ vec3f RayTracing(vec3f start, vec3f dir, int depth)
         return Black.to_vec();
     }
     float minDistance = 1e16; //inf
-    Entity *chEntity;
+    Renderable_Entity *chEntity;
     bool isIns = false;
     for(auto ptr : entitys)
     {
@@ -92,7 +95,7 @@ vec3f RayTracing(vec3f start, vec3f dir, int depth)
 	vec3f ret = color + Ir * ((Phong_Entity*)chEntity)->get_kd() + It * ((Phong_Entity*)chEntity)->get_ks();
 	return ret;
 }
-void draw(int LX, int LY, int RX, int RY, int Z, vec3f viewpoint, string framename)
+void draw(int LX, int LY, int RX, int RY, int Z, vec3f viewpoint, string framename = "RayTrace.bmp")
 {
     int px = RX - LX + 1, py = RY - LY + 1;
 	cleanframe();
@@ -102,15 +105,8 @@ void draw(int LX, int LY, int RX, int RY, int Z, vec3f viewpoint, string framena
         for(int j = 0; j <= RX - LX; ++j)
         {
             int x = LX + j;
-			if (i == 584 && j == 66)
-			{
-				int a = 0;
-				++a;
-			}
             int pos = (py - i - 1) * px + (px - j - 1);
             vec3f res = RayTracing(viewpoint, vec3f(x, y, Z).norm(), 1);
-			//if(!res.is_zero())
-				//printf("%d %d = (%f, %f, %f)\n", i, j, res.x, res.y, res.z);
             BufferR[pos] = resize(res.x);
             BufferG[pos] = resize(res.y);
             BufferB[pos] = resize(res.z);
@@ -118,27 +114,33 @@ void draw(int LX, int LY, int RX, int RY, int Z, vec3f viewpoint, string framena
     }
 	output(px, py, framename);
 }
-
+void buildBoundingTree()
+{
+	stack<BoundingBox_Entity*> boxStack;
+	for(auto entity : entitys)
+	{
+		
+	}
+}
 void createScene()
 {
 	Sphere_Phong *ball1 = new Sphere_Phong(vec3f(200, -50, 1000), 150, DRed);
 	Sphere_Phong *ball2 = new Sphere_Phong(vec3f(-200, -50, 1000), 150, DBlue);
 	Sphere_Phong *ball3 = new Sphere_Phong(vec3f(0, -350, 1500), 200, DGreen);
 	ball1->set_ka(0.9); ball1->set_kd(0.8); ball1->set_ks(0.7); ball1->set_n(10);
-	ball2->set_ka(0.9); ball2->set_kd(0.9); ball2->set_ks(0.6); ball2->set_n(50);
-	ball3->set_ka(0.9); ball3->set_kd(0.9); ball3->set_ks(0.3); ball3->set_n(50);
+	ball2->set_ka(0.9); ball2->set_kd(0.9); ball2->set_ks(0.6); ball2->set_n(40);
+	ball3->set_ka(0.9); ball3->set_kd(0.9); ball3->set_ks(0.4); ball3->set_n(60);
 
 	Plane_Phong *plane = new Plane_Phong(vec3f(0, -1, 0), 120, DGray);
-	plane->set_ka(0.9); plane->set_kd(0.8); plane->set_ks(0.8); 
-	plane->set_n(100);
+	plane->set_ka(0.9); plane->set_kd(0.8); plane->set_ks(0.8); plane->set_n(100);
 
-	entitys.push_back((Entity*)ball1);
-	entitys.push_back((Entity*)ball2);
-	entitys.push_back((Entity*)ball3);
-	entitys.push_back((Entity*)plane);
+	entitys.push_back((Renderable_Entity*)ball1);
+	entitys.push_back((Renderable_Entity*)ball2);
+	entitys.push_back((Renderable_Entity*)ball3);
+	entitys.push_back((Renderable_Entity*)plane);
 
-	PointLight *light1 = new PointLight(vec3f(1000, 200, 0));
-	PointLight *light2 = new PointLight(vec3f(-1000, -1000, 0));
+	PointLight *light1 = new PointLight(vec3f(1000, 200, 0), White.to_norm());
+	PointLight *light2 = new PointLight(vec3f(-1000, -1000, 0), White.to_norm());
 
 	//lights.push_back((Light*)light1);
 	lights.push_back((Light*)light2);
@@ -146,11 +148,6 @@ void createScene()
 int main(int argc,char **argv)
 {
 	createScene();
-	for (int i = 400; i < 600; i += 4) {
-		char buf[10];
-		sprintf(buf, "%03d.bmp", i);
-		draw(-400, -400, 400, 400, 900, vec3f(0, -i, 0), string(buf));
-		printf("%d / 400\n", i);
-	}
+	draw(-500, -500, 500, 500, 900, vec3f(0, -100, 0));
     return 0;
 }
