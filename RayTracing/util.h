@@ -2,14 +2,23 @@
 #define UTIL_H
 
 #include <cmath>
+#include <cassert>
 using std::sqrt;
 
 const double eps = 1e-4;
+const double double_inf = 1e16;
+
 struct vec3f
 {
     float x, y, z;
     vec3f():x(0),y(0),z(0){}
     vec3f(float _x, float _y, float _z):x(_x),y(_y),z(_z){}
+    bool operator == (const vec3f &rhs)const{
+		return x == rhs.x && y == rhs.y && z == rhs.z;
+	}
+	bool operator != (const vec3f &rhs)const{
+		return !(*this == rhs);
+	}
     float operator * (const vec3f &rhs)const{
         return x * rhs.x + y * rhs.y + z * rhs.z;
     }
@@ -50,7 +59,7 @@ struct Color
 		return vec3f(r, g, b);
 	}
 	vec3f to_norm()const{
-		return vec3f(r / 255, g / 255, b / 255);
+		return vec3f(r / 255.f, g / 255.f, b / 255.f);
 	}
 };
 const Color Black(0, 0, 0), Red(255, 0, 0), Green(0, 255, 0), Blue(0, 0, 255), White(255, 255, 255);

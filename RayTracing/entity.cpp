@@ -4,27 +4,6 @@
 
 #include "entity.h"
 
-BoundingBox_Entity::BoundingBox_Entity(vec3f _min, vec3f _max)
-{
-	this->min = _min;
-	this->max = _max;
-}
-
-vec3f BoundingBox_Entity::get_center()
-{
-	return (this->min + this->max) * 0.5;
-}
-
-float BoundingBox_Entity::get_distance(BoundingBox_Entity *box)
-{
-	return (this->get_center() - box->get_center()).length();
-}
-
-vec3f BoundingBox_Entity::light_intersection(vec3f start, vec3f dir)
-{
-	return vec3f();
-}
-
 vec3f Phong_Entity::render_point(vec3f ins, vec3f dir, std::vector<Renderable_Entity*>& entitys, std::vector<Light*>& lights)
 {
 	float I = 0;
@@ -111,10 +90,11 @@ vec3f Sphere_Phong::get_refraction(vec3f ins, vec3f dir)
 	return vec3f();
 }
 
-BoundingBox_Entity Sphere_Phong::get_bounding()
+void Sphere_Phong::get_bounding(vec3f &bmin, vec3f &bmax)
 {
-	vec3f Min, Max;
-	
+	vec3f tRad(rad + 1, rad + 1, rad + 1);
+	bmin = center - tRad;
+	bmax = center + tRad;
 }
 
 Plane_Phong::Plane_Phong(vec3f _n, float _d, Color _color)
@@ -161,7 +141,7 @@ vec3f Plane_Phong::get_refraction(vec3f ins, vec3f dir)
 	return vec3f();
 }
 
-BoundingBox_Entity Plane_Phong::get_bounding()
+void Plane_Phong::get_bounding(vec3f &bmin, vec3f &bmax)
 {
-	
+	bmin = bmax = vec3f();
 }
