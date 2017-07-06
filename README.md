@@ -4,3 +4,5 @@
 编译需要使用c++11
 
 支持包围盒加速
+
+![raytracing](RayTracing/RayTrace.jpg)
